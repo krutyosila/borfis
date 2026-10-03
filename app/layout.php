@@ -187,12 +187,14 @@ function drip_svg(string $fill = 'var(--yellow)'): string
     return '<svg class="drip" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path style="fill:' . $fill . '" d="M0 90 V40 C60 40 70 10 120 10 C170 10 160 70 210 70 C260 70 250 20 300 20 C360 20 350 80 420 80 C480 80 470 30 530 30 C590 30 580 60 640 60 C700 60 690 0 760 0 C830 0 810 75 880 75 C940 75 930 25 990 25 C1050 25 1040 65 1100 65 C1160 65 1150 15 1210 15 C1270 15 1260 70 1320 70 C1380 70 1380 40 1440 40 V90 Z"/></svg>';
 }
 
-function product_card(array $p, int $i = 0): void
+function product_card(array $p, int $i = 0, bool $fallbackArt = true): void
 {
     $rot = [10, -8, 6, -10, 8, -6][$i % 6];
     $sticker = ['s-red', 's-yellow', 's-white'][$i % 3];
-    $showPrice = flag('show_prices') && $p['price'] !== null; ?>
-<article class="card<?= $p['is_available'] ? '' : ' is-out' ?>" style="--rot:<?= $rot ?>deg">
+    $showPrice = flag('show_prices') && $p['price'] !== null;
+    $hasMedia = $p['image'] !== '' || $fallbackArt; ?>
+<article class="card<?= $p['is_available'] ? '' : ' is-out' ?><?= $hasMedia ? '' : ' no-media' ?><?= $showPrice ? '' : ' no-price' ?>" style="--rot:<?= $rot ?>deg">
+<?php if ($hasMedia): ?>
 <div class="card-media">
 <?php if ($p['image'] !== ''): ?>
 <img src="<?= e(upload_url($p['image'])) ?>" alt="<?= e($p['name']) ?>" loading="lazy" decoding="async" width="800" height="600" data-zoom>
@@ -200,6 +202,7 @@ function product_card(array $p, int $i = 0): void
 <?= burger_svg('card-fallback') ?>
 <?php endif; ?>
 </div>
+<?php endif; ?>
 <?php if ($showPrice): ?><div class="price-sticker <?= $sticker ?>"><?= e(format_price((float) $p['price'])) ?></div><?php endif; ?>
 <?php if ($p['badge'] !== ''): ?><span class="badge"><?= e($p['badge']) ?></span><?php endif; ?>
 <div class="card-body">

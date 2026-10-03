@@ -18,6 +18,8 @@ function db(): PDO
     migrate($pdo);
     if ($fresh) {
         seed($pdo);
+    } else {
+        upgrade_menu($pdo);
     }
     return $pdo;
 }
@@ -123,7 +125,7 @@ function setting_definitions(): array
         'google_review_count' => ['Google yorum sayısı', '250', 'text', 'metinler'],
         'google_reviews_url' => ['Google yorumları bağlantısı', 'https://www.google.com/search?q=B%C3%B6rfi%27s+Burger+Akyaka+yorumlar', 'url', 'metinler'],
         'price_range' => ['Kişi başı fiyat aralığı', '₺400–600', 'text', 'metinler'],
-        'menu_note' => ['Menü sayfası alt notu', 'Fiyatlara KDV dahildir. Alerjen bilgisi için lütfen ekibimize sorun.', 'textarea', 'metinler'],
+        'menu_note' => ['Menü sayfası alt notu', 'Alerjiniz varsa lütfen garsona bildiriniz.', 'textarea', 'metinler'],
         'footer_text' => ['Alt bilgi notu', 'Yine bekleriz!', 'text', 'metinler'],
 
         // Görünüm
@@ -134,7 +136,7 @@ function setting_definitions(): array
         'show_ticker' => ['Kayan yazıyı göster', '1', 'bool', 'gorunum'],
         'show_reviews' => ['Yorumlar bölümünü göster', '1', 'bool', 'gorunum'],
         'show_gallery' => ['Galeri bölümünü göster', '1', 'bool', 'gorunum'],
-        'show_prices' => ['Fiyatları göster', '1', 'bool', 'gorunum'],
+        'show_prices' => ['Fiyatları göster', '0', 'bool', 'gorunum'],
 
         // SEO
         'seo_title' => ['Sayfa başlığı (Google)', "Börfi's Burger Akyaka — Burger & More | Ula, Muğla", 'text', 'seo'],
@@ -151,32 +153,8 @@ function seed(PDO $pdo): void
         $ins->execute([$key, $def[1]]);
     }
 
-    $cats = [
-        ['BURGERLER', 'Kocaman köfteler, eriyen cheddar', 1],
-        ['WRAPLER', 'Sar, ısır, yürü', 2],
-        ['YANLAR', 'Taze patates ve dostları', 3],
-        ['İÇECEKLER', 'Serinlemek için', 4],
-    ];
-    $c = $pdo->prepare('INSERT INTO categories(name, tagline, sort) VALUES(?,?,?)');
-    $ids = [];
-    foreach ($cats as $cat) {
-        $c->execute($cat);
-        $ids[] = (int) $pdo->lastInsertId();
-    }
-
-    // Instagram ve Google'da adı geçen ürünler; fiyatlar panelden girilecek.
-    $products = [
-        [$ids[0], "BÖRFİ'S BURGER", 'Evin imza burgeri.', null, 'İMZA', 1, 1],
-        [$ids[0], 'L.A. BURGER', 'Misafirlerin en sevdiği.', null, 'FAVORİ', 1, 2],
-        [$ids[0], 'AKYAKA BURGER', '', null, '', 1, 3],
-        [$ids[0], 'MUSHGOVA', 'Mantarlı burger.', null, '', 0, 4],
-        [$ids[0], 'PERİ BURGER', 'Tavuk burger.', null, '', 0, 5],
-        [$ids[2], 'PATATES KIZARTMASI', 'Taze patatesten.', null, '', 0, 1],
-    ];
-    $p = $pdo->prepare('INSERT INTO products(category_id, name, description, price, badge, is_featured, sort) VALUES(?,?,?,?,?,?,?)');
-    foreach ($products as $row) {
-        $p->execute($row);
-    }
+    insert_menu($pdo);
+    $pdo->prepare('INSERT OR REPLACE INTO settings(key, value) VALUES(?, ?)')->execute(['menu_version', (string) MENU_VERSION]);
 
     $reviews = [
         ['Ekrem T.', "Akyaka'da yediğim en temiz yemek. Patatesler taze, hamburger köftesi lezzetli, fiyatlar normal, personel güler yüzlü. Mutlaka şans verin.", 5, 'Google', 1],
@@ -188,4 +166,100 @@ function seed(PDO $pdo): void
         $r->execute($row);
     }
     $pdo->commit();
+}
+
+/* ================= Menü (dükkândaki menü panosundan) ================= */
+
+const MENU_VERSION = 2;
+
+/** Fiyatı null olanlar menü panosunda okunamadı; panelden girilecek. */
+function real_menu(): array
+{
+    $ss = 'Patates ile servis edilir.';
+    return [
+        ['BURGERLER', $ss, 1, [
+            ['KLASİK BURGER', '150 gr burger köftesi, marul, domates, salatalık turşusu, ranch sos, Börfi\'s sos.', null, '', 0],
+            ['CHEESE BURGER', '150 gr burger köftesi, cheddar, salatalık turşusu, karamelize soğan, ranch sos, Börfi\'s sos.', null, '', 0],
+            ["BÖRFİ'S BURGER", '150 gr burger köftesi, cheddar, turşu, çıtır soğan, çıtır patates, domates, marul, ranch sos, Börfi\'s sos.', null, 'İMZA', 1],
+            ['L.A. BURGER', '150 gr burger köftesi, cheddar, karamelize soğan, dana bacon, ranch sos, barbekü sos.', null, 'FAVORİ', 1],
+            ['AKYAKA BURGER', '150 gr burger köftesi, kapiçyo peyniri, avokado, dana bacon, domates, marul, kırmızı soğan, ranch sos, Börfi\'s sos.', null, '', 1],
+            ['MUSHGOVA BURGER', '150 gr burger köftesi, cheddar, kremalı mantar, ranch sos.', null, '', 0],
+            ['MÜTEBBEL BURGER', '150 gr burger köftesi, kırmızı soğan, Gökova susamı, mütebbel (köz patlıcan, Gökova tahini), sarımsaklı mayonez.', null, 'GÖKOVA', 1],
+        ]],
+        ['TAVUK BURGER & WRAP', $ss, 1, [
+            ['TAVUK BURGER / WRAP', '150 gr çıtır tavuk, coleslaw, cheddar, ranch sos, acılı mayonez.', null, '', 0],
+            ['PERİ PERİ BURGER / WRAP', '150 gr çıtır tavuk, cheddar, marul, salatalık turşusu, peri peri sos.', null, 'ACI', 0],
+            ['MUSHCHICKEN BURGER / WRAP', '150 gr çıtır tavuk, kremalı mantar, cheddar, ranch sos.', null, '', 0],
+        ]],
+        ['YAN ÜRÜNLER', 'Patates, hellim, paçanga…', 1, [
+            ['PATATES', '', null, '', 0],
+            ['CHEDDAR SOSLU PATATES', 'Üstüne az biraz Gökova susamı :)', null, '', 0],
+            ['KAPİÇYO PEYNİRLİ PATATES', '', null, '', 0],
+            ["HELLİM 4'LÜ", 'Üstüne az biraz Gökova susamı :)', null, '', 0],
+            ['PAÇANGA', '', null, '', 0],
+            ["TENDERS 4'LÜ", '', null, '', 0],
+        ]],
+        ['EXTRALAR', 'Burgerini güçlendir', 0, [
+            ['BURGER KÖFTESİ', '', null, '', 0],
+            ['CHEDDAR', '', null, '', 0],
+            ['DANA BACON', '', null, '', 0],
+            ['AVOKADO', '', null, '', 0],
+        ]],
+        ['İÇECEKLER', 'Serinlemek için', 1, [
+            ['COCA COLA', '', null, '', 0],
+            ['COCA COLA ZERO', '', null, '', 0],
+            ['SPRITE', '', null, '', 0],
+            ['FANTA', '', null, '', 0],
+            ['FUSE TEA', 'Şeftali, limon, mango.', null, '', 0],
+            ['AYRAN', '', null, '', 0],
+            ['LİMONATA', '', null, '', 0],
+            ['SODA', '', null, '', 0],
+            ['SU', '', null, '', 0],
+        ]],
+    ];
+}
+
+function insert_menu(PDO $pdo): void
+{
+    $c = $pdo->prepare('INSERT INTO categories(name, tagline, sort, show_on_home) VALUES(?,?,?,?)');
+    $p = $pdo->prepare('INSERT INTO products(category_id, name, description, price, badge, is_featured, sort) VALUES(?,?,?,?,?,?,?)');
+    foreach (real_menu() as $ci => [$name, $tagline, $onHome, $items]) {
+        $c->execute([$name, $tagline, $ci + 1, $onHome]);
+        $catId = (int) $pdo->lastInsertId();
+        foreach ($items as $pi => [$pname, $desc, $price, $badge, $featured]) {
+            $p->execute([$catId, $pname, $desc, $price, $badge, $featured, $pi + 1]);
+        }
+    }
+}
+
+/**
+ * İlk sürümdeki örnek menüyü gerçek menüyle bir kez değiştirir.
+ * Panelden ürün eklendiyse, fotoğraf ya da fiyat girildiyse hiçbir şeye dokunmaz.
+ */
+function upgrade_menu(PDO $pdo, bool $force = false): bool
+{
+    $v = $pdo->query("SELECT value FROM settings WHERE key = 'menu_version'")->fetchColumn();
+    if (!$force && (int) $v >= MENU_VERSION) {
+        return false;
+    }
+    $oldSeed = ["BÖRFİ'S BURGER", 'L.A. BURGER', 'AKYAKA BURGER', 'MUSHGOVA', 'PERİ BURGER', 'PATATES KIZARTMASI'];
+    $touched = false;
+    foreach ($pdo->query('SELECT name, price, image FROM products') as $row) {
+        if (!in_array($row['name'], $oldSeed, true) || $row['price'] !== null || $row['image'] !== '') {
+            $touched = true;
+            break;
+        }
+    }
+    $ok = $force || !$touched;
+    $pdo->beginTransaction();
+    if ($ok) {
+        $pdo->exec('DELETE FROM products; DELETE FROM categories;');
+        insert_menu($pdo);
+        $pdo->exec("UPDATE settings SET value = '0' WHERE key = 'show_prices'");
+        $pdo->prepare("UPDATE settings SET value = ? WHERE key = 'menu_note' AND value = ?")
+            ->execute(['Alerjiniz varsa lütfen garsona bildiriniz.', 'Fiyatlara KDV dahildir. Alerjen bilgisi için lütfen ekibimize sorun.']);
+    }
+    $pdo->prepare('INSERT OR REPLACE INTO settings(key, value) VALUES(?, ?)')->execute(['menu_version', (string) MENU_VERSION]);
+    $pdo->commit();
+    return $ok;
 }

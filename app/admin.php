@@ -442,7 +442,6 @@ function page_dashboard(): void
     $stats = [
         'Ürün' => (int) db()->query('SELECT COUNT(*) FROM products')->fetchColumn(),
         'Tükendi' => (int) db()->query('SELECT COUNT(*) FROM products WHERE is_available = 0')->fetchColumn(),
-        'Fiyatı girilmemiş' => (int) db()->query('SELECT COUNT(*) FROM products WHERE price IS NULL')->fetchColumn(),
         'Galeri görseli' => (int) db()->query('SELECT COUNT(*) FROM gallery')->fetchColumn(),
     ];
     $status = open_status();
@@ -462,11 +461,11 @@ function page_dashboard(): void
 </form>
 </section>
 <?php
-    $missing = db()->query('SELECT p.id, p.name FROM products p WHERE p.price IS NULL OR p.image = "" ORDER BY p.sort LIMIT 8')->fetchAll();
+    $missing = db()->query('SELECT p.id, p.name FROM products p WHERE ' . (flag('show_prices') ? 'p.price IS NULL OR ' : '') . 'p.image = "" ORDER BY p.sort LIMIT 8')->fetchAll();
     if ($missing): ?>
 <section class="box">
-<h2>Eksik bilgisi olan ürünler</h2>
-<p class="muted">Fiyatı veya fotoğrafı olmayan ürünler. Tıklayıp tamamlayın.</p>
+<h2>Fotoğrafı eksik ürünler</h2>
+<p class="muted">Tıklayıp fotoğraf ekleyin.</p>
 <ul class="chips"><?php foreach ($missing as $m): ?><li><a href="/admin/?p=urun&id=<?= (int) $m['id'] ?>"><?= e($m['name']) ?></a></li><?php endforeach; ?></ul>
 </section>
 <?php endif;
@@ -492,7 +491,7 @@ function page_products(): void
 <li class="row<?= $p['is_visible'] ? '' : ' faded' ?>" id="r<?= (int) $p['id'] ?>">
 <?= move_buttons('urunler', (int) $p['id']) ?>
 <a class="thumb" href="/admin/?p=urun&id=<?= (int) $p['id'] ?>"><?php if ($p['image']): ?><img src="<?= e(upload_url($p['image'])) ?>" alt="" loading="lazy"><?php endif; ?></a>
-<a class="row-main" href="/admin/?p=urun&id=<?= (int) $p['id'] ?>"><strong><?= e($p['name']) ?></strong><span><?= $p['price'] === null ? '<em class="warn">Fiyat yok</em>' : e(format_price((float) $p['price'])) ?><?= $p['badge'] ? ' · ' . e($p['badge']) : '' ?></span></a>
+<a class="row-main" href="/admin/?p=urun&id=<?= (int) $p['id'] ?>"><strong><?= e($p['name']) ?></strong><span><?= $p['price'] === null ? (flag('show_prices') ? '<em class="warn">Fiyat yok</em>' : '') : e(format_price((float) $p['price'])) ?><?= $p['badge'] ? ($p['price'] !== null || flag('show_prices') ? ' · ' : '') . e($p['badge']) : '' ?></span></a>
 <div class="row-actions">
 <?= toggle_button('urunler', (int) $p['id'], 'is_available', (bool) $p['is_available'], 'Stokta', 'Tükendi') ?>
 <?= toggle_button('urunler', (int) $p['id'], 'is_featured', (bool) $p['is_featured'], '★ Favori', '☆ Favori') ?>

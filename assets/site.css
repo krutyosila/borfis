@@ -79,6 +79,7 @@ p{margin:0;text-wrap:pretty}
 .mega span{display:block}
 .mega .outlined,.menu-title .outlined{display:inline;color:var(--yellow);-webkit-text-stroke:.035em var(--dark);paint-order:stroke fill}
 .mega .outlined{display:block}
+.mega.menu-title .outlined{display:inline}
 .hero-text{font-size:clamp(18px,1.8vw,22px);font-weight:700;max-width:520px}
 .hero-art{flex:1 1 440px;min-width:0;position:relative;display:grid;place-items:center;min-height:clamp(340px,42vw,560px)}
 .sunburst{position:absolute;width:min(520px,92%);aspect-ratio:1;border-radius:50%;background:repeating-conic-gradient(var(--yellow) 0 10deg,#E89F2C 10deg 20deg);border:var(--b);animation:spin 60s linear infinite}
@@ -112,7 +113,7 @@ p{margin:0;text-wrap:pretty}
 .cat-tile{border:var(--b);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;min-height:230px;text-decoration:none;display:flex;flex-direction:column;justify-content:space-between;transition:transform .2s ease,rotate .2s ease}
 .cat-tile:hover{transform:translate(-3px,-3px);rotate:0deg!important}
 .cat-tile{container-type:inline-size}
-.cat-name{font-family:var(--display);font-size:clamp(26px,13.5cqi,56px);line-height:1;white-space:nowrap}
+.cat-name{font-family:var(--display);font-size:clamp(26px,12.5cqi,56px);line-height:1;white-space:normal;overflow-wrap:normal;hyphens:none}
 .cat-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;font-weight:700;font-size:18px}
 .cat-foot b{font-family:var(--display);font-weight:400;font-size:40px;line-height:1}
 .t0{background:var(--red);color:#fff;rotate:-2deg}
@@ -137,6 +138,24 @@ p{margin:0;text-wrap:pretty}
 .card-body p{color:var(--muted);font-weight:700}
 .out-tag{align-self:flex-start;font-family:var(--display);font-size:14px;background:var(--dark);color:var(--yellow);padding:6px 12px;border-radius:8px;rotate:-3deg;margin-top:6px}
 .card.is-out .card-media{filter:grayscale(1);opacity:.6}
+.card.no-media .card-body{padding-right:110px;min-height:120px;justify-content:center}
+.card.no-media.no-price .card-body{padding-right:24px}
+.card.no-media .badge{position:static;align-self:flex-start;margin:18px 0 -10px 24px}
+@media (max-width:600px){
+  .card-grid.light{gap:22px}
+  .card-grid.light .card{flex-direction:row;align-items:stretch;border-radius:22px;box-shadow:5px 5px 0 var(--dark)}
+  .card-grid.light .card-media{width:110px;flex:none;aspect-ratio:auto;min-height:110px;border-radius:18px 0 0 18px;border-bottom:0;border-right:var(--b)}
+  .card-grid.light .card-body{padding:14px 64px 14px 16px;gap:4px;justify-content:center;min-height:0}
+  .card-grid.light .card.no-price .card-body{padding-right:16px}
+  .card-grid.light .card-body h3{font-size:19px}
+  .card-grid.light .card-body p{font-size:14px;line-height:1.4}
+  .card-grid.light .price-sticker{min-width:66px;height:66px;padding:0 6px;font-size:15px;right:-8px;top:-14px;border-width:3px}
+  .card-grid.light .badge{font-size:11px;left:8px;top:8px;padding:4px 7px}
+  .card-grid.light .card.no-media{flex-direction:column}
+  .card-grid.light .card.no-media .badge{margin:12px 0 -6px 16px}
+  .card-grid.light .card-fallback{width:80%}
+  .menu-cat{padding-top:36px;gap:24px}
+}
 
 /* Slogan */
 .slogan{background:var(--red);border-block:var(--b);padding-block:clamp(48px,7vw,80px)}

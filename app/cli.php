@@ -45,4 +45,14 @@ if ($cmd === 'yedek') {
     exit(0);
 }
 
-fwrite(STDOUT, "Kullanım:\n  php app/cli.php sifre [kullanici]\n  php app/cli.php yedek\n");
+if ($cmd === 'menu') {
+    if (($argv[2] ?? '') !== '--evet') {
+        fwrite(STDOUT, "DİKKAT: Tüm kategoriler ve ürünler silinip menü panosundaki menü yüklenir.\nOnaylamak için: php app/cli.php menu --evet\n");
+        exit(1);
+    }
+    upgrade_menu(db(), true);
+    fwrite(STDOUT, "Menü yüklendi.\n");
+    exit(0);
+}
+
+fwrite(STDOUT, "Kullanım:\n  php app/cli.php sifre [kullanici]\n  php app/cli.php yedek\n  php app/cli.php menu --evet   (menüyü sıfırdan yükler)\n");
