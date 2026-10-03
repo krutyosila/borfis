@@ -148,7 +148,10 @@ function render_footer(): void
 <a href="<?= e($s['maps_url']) ?>" rel="noopener" target="_blank">Yol tarifi</a>
 </nav>
 </div>
+<div class="footer-bottom">
 <p class="footer-note">© <?= date('Y') ?> <?= e($s['site_name']) ?> · <?= e($s['footer_text']) ?></p>
+<p class="credit">by <a href="https://soyturk.com" target="_blank" rel="noopener">soyturk</a></p>
+</div>
 </div>
 </footer>
 <?php if ($s['whatsapp'] !== ''): ?>
