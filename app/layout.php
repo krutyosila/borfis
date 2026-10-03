@@ -69,7 +69,7 @@ function render_head(string $title, string $description, string $path): void
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title><?= e($title) ?></title>
 <meta name="description" content="<?= e($description) ?>">
 <link rel="canonical" href="<?= e($canonical) ?>">
@@ -155,6 +155,11 @@ function render_footer(): void
 <a class="wa-fab" href="https://wa.me/<?= e(preg_replace('/\D+/', '', $s['whatsapp'])) ?>" target="_blank" rel="noopener" aria-label="WhatsApp ile yaz">
 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.5 7.4L3 21l2.1-5.3A8.4 8.4 0 1 1 21 11.5z"/></svg></a>
 <?php endif; ?>
+<dialog class="lightbox" aria-label="Fotoğraf">
+<button type="button" class="lb-close" aria-label="Kapat">×</button>
+<div class="lb-stage"><img class="lb-img" alt=""></div>
+<p class="lb-hint">İki parmakla ya da çift dokunarak büyüt</p>
+</dialog>
 </body>
 </html>
 <?php
@@ -190,7 +195,7 @@ function product_card(array $p, int $i = 0): void
 <article class="card<?= $p['is_available'] ? '' : ' is-out' ?>" style="--rot:<?= $rot ?>deg">
 <div class="card-media">
 <?php if ($p['image'] !== ''): ?>
-<img src="<?= e(upload_url($p['image'])) ?>" alt="<?= e($p['name']) ?>" loading="lazy" decoding="async" width="800" height="600">
+<img src="<?= e(upload_url($p['image'])) ?>" alt="<?= e($p['name']) ?>" loading="lazy" decoding="async" width="800" height="600" data-zoom>
 <?php else: ?>
 <?= burger_svg('card-fallback') ?>
 <?php endif; ?>

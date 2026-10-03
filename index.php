@@ -34,7 +34,7 @@ render_header('home');
 <div class="hero-art">
 <div class="sunburst" aria-hidden="true"></div>
 <?php if ($s['hero_image'] !== ''): ?>
-<img class="hero-photo" src="<?= e(upload_url($s['hero_image'])) ?>" alt="<?= e($s['site_name']) ?>" width="560" height="560" fetchpriority="high">
+<img class="hero-photo" src="<?= e(upload_url($s['hero_image'])) ?>" alt="<?= e($s['site_name']) ?>" width="560" height="560" fetchpriority="high" data-zoom>
 <?php else: ?>
 <?= burger_svg() ?>
 <?php endif; ?>
@@ -161,7 +161,7 @@ render_header('home');
 <div class="polaroids">
 <?php foreach ($gallery as $i => $g): ?>
 <figure class="polaroid" style="--rot:<?= [-4, 3, -2, 5, -3, 2][$i % 6] ?>deg">
-<img src="<?= e(upload_url($g['image'])) ?>" alt="<?= e($g['caption'] ?: $s['site_name']) ?>" loading="lazy" decoding="async" width="600" height="600">
+<img src="<?= e(upload_url($g['image'])) ?>" alt="<?= e($g['caption'] ?: $s['site_name']) ?>" loading="lazy" decoding="async" width="600" height="600" data-zoom>
 <?php if ($g['caption'] !== ''): ?><figcaption><?= e($g['caption']) ?></figcaption><?php endif; ?>
 </figure>
 <?php endforeach; ?>
