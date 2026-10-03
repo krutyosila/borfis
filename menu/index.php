@@ -37,7 +37,7 @@ render_header('menu');
 <?php if ($c['tagline'] !== ''): ?><span class="script-note"><?= e($c['tagline']) ?></span><?php endif; ?>
 </div>
 <div class="card-grid light">
-<?php foreach ($items as $i => $p) { product_card($p, $i, false); } ?>
+<?php foreach ($items as $i => $p) { product_card($p, $i); } ?>
 </div>
 </section>
 <?php endforeach; ?>

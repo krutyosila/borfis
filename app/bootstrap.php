@@ -41,3 +41,4 @@ if (CONFIG['debug']) {
 
 require APP_DIR . '/db.php';
 require APP_DIR . '/helpers.php';
+require APP_DIR . '/art.php';
